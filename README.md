@@ -1,2 +1,4 @@
-# demo-infrastructure-testing
-Verify your Infrastructure with every deployment using Pulumi and Circle CI
+# Infrastructure Testing using Pulumi and CircleCI
+
+This repository contains the SUPER SLICK demos showing off how you can test
+your cloud infrastructure using Pulumi and CircleCI.

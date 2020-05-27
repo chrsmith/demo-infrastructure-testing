@@ -1,3 +1,3 @@
-name: unit-testing-demo
+name: unit-testing
 runtime: python
-description: Simple webserver hosting a static file.
+description: Simple EC2 webserver, with tests.

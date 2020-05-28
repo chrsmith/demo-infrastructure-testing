@@ -1,7 +1,6 @@
 """Unit tests for the infra
 """
 
-
 import unittest
 import pulumi
 
@@ -37,7 +36,7 @@ class InfrastructureTests(unittest.TestCase):
         def check_security_group_rules(args):
             urn, ingress = args
             for rule in ingress:
-                if rule["from_port"] not in [ 22, 80 ]:
+                if rule["from_port"] not in [ 80 ]:
                     self.assertFalse(f"Security group {urn} opens unexpected port: {rule}")
 
         return pulumi.Output \

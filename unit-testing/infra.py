@@ -12,16 +12,14 @@ echo "Hello, World! From a Pulumi-managed EC2 server." > index.html
 nohup python -m SimpleHTTPServer 80 &
 """
 
-instance = ec2.Instance('web-server-www;',
+instance = ec2.Instance('web-server-www',
     instance_type="t2.micro",
     tags={"Owner": "Chris"},
     # AMI for Amazon Linux 2 us-east-2 (Ohio)
     ami="ami-0f7919c33c90f5b58",
     user_data=user_data)
 
-group = ec2.SecurityGroup('web-secgrp', ingress=[
-    # SSH
-    { "protocol": "tcp", "from_port": 22, "to_port": 22, "cidr_blocks": ["0.0.0.0/0"] },
+group = ec2.SecurityGroup("web-secgrp", ingress=[
     # HTTP
     { "protocol": "tcp", "from_port": 80, "to_port": 80, "cidr_blocks": ["0.0.0.0/0"] },
 ])

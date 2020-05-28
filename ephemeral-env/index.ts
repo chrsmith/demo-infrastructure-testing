@@ -4,19 +4,18 @@ import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import * as pulumi from "@pulumi/pulumi";
 
-import * as url from "url";
 import axios from "axios";
 
 const config = new pulumi.Config();
 const githubToken = config.require("githubToken");
 
-// const hostedZone = config.get("hostedZone");  // e.g. pulumi.com
-const domainName = config.get("domainName");  // e.g. issue-tracker.pulumi.com
+// const hostedZone = config.get("hostedZone");   // e.g. pulumi.com
+const domainName = config.require("domainName");  // e.g. issue-tracker.pulumi.com
 
 // gitHubIssueTracker is an API Gateway that both serves our static content, as well
 // as proxying GitHub API calls.
 const issueTrackerApiGateway = new awsx.apigateway.API(
-    "github-issue-tracker-api",
+    `issue-tracker_${pulumi.getStack()}`,
     {
         apiKeySource: "HEADER",
         routes: [
@@ -36,7 +35,7 @@ const issueTrackerApiGateway = new awsx.apigateway.API(
                     const queryParts = [];
                     // tslint:disable-next-line:forin
                     for (const key in ev.queryStringParameters) {
-                        queryParts.push(`${key}=${ev.queryStringParameters[key]}`);
+                        queryParts.push(`${key} = ${ev.queryStringParameters[key]}`);
                     }
                     const qs = queryParts.join("&");
                     if (qs.length > 0) {
@@ -55,7 +54,7 @@ const issueTrackerApiGateway = new awsx.apigateway.API(
                         return {
                             statusCode: res.status,
                             headers: res.headers,
-                            body: res.data,
+                            body: res.data + `got response: ${res.status} ${res.statusText} ${res.data.length}`,
                         };
                     } catch (e) {
                         console.log(`failed to handle ${url}`);

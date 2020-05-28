@@ -1,0 +1,20 @@
+* {
+    font: 500 15px "Open Sans",sans-serif
+}
+
+h1 {
+    font: 600 32px/48px Ubuntu,sans-serif;
+}
+
+h2 {
+    font: 600 24px/32px Ubuntu,sans-serif;
+}
+
+th {
+    padding: 4px;
+    font-weight: 600;
+}
+
+td {
+    padding: 1px;
+}

@@ -1,0 +1,3 @@
+name: github-issue-tracker
+description: A Pulumi program for viewing GitHub issues for an organization.
+runtime: nodejs

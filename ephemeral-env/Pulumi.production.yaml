@@ -1,0 +1,5 @@
+config:
+  aws:region: us-west-2
+  github-issue-tracker:domainName: issues.pulumi-demos.net
+  github-issue-tracker:githubToken:
+    secure: AAABAFmmdeaiejXFBmJAiC9qSGPF5n6C3Tz/zb/Rik56Svyv6/1dc1GEkH3QOUKVfq+FM/QxHetvbesJBNxjSFITFIfvfakJ

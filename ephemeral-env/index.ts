@@ -12,12 +12,18 @@ const githubToken = config.require("githubToken");
 // const hostedZone = config.get("hostedZone");   // e.g. pulumi.com
 const domainName = config.require("domainName");  // e.g. issue-tracker.pulumi.com
 
+// Provision an SSL certificate to enable SSL -- ensuring to do so in us-east-1.
+const awsUsEast1 = new aws.Provider("usEast1", { region: "us-east-1" });
+const sslCert = new aws.acm.Certificate("sslCert", {
+    domainName: domainName,
+    validationMethod: "DNS",
+}, { provider: awsUsEast1 });
+
 // gitHubIssueTracker is an API Gateway that both serves our static content, as well
 // as proxying GitHub API calls.
 const issueTrackerApiGateway = new awsx.apigateway.API(
     `issue-tracker_${pulumi.getStack()}`,
     {
-        apiKeySource: "HEADER",
         routes: [
             // Serve the static content at the root.
             {
@@ -29,7 +35,6 @@ const issueTrackerApiGateway = new awsx.apigateway.API(
             {
                 path: "/github/{path+}",
                 method: "GET",
-                apiKeyRequired: true,
                 eventHandler: async (ev, ctx) => {
                     let url = ev.path.replace(/^\/github/, "https://api.github.com");
                     const queryParts = [];
@@ -57,7 +62,7 @@ const issueTrackerApiGateway = new awsx.apigateway.API(
                             body: res.data + `got response: ${res.status} ${res.statusText} ${res.data.length}`,
                         };
                     } catch (e) {
-                        console.log(`failed to handle ${url}`);
+                        console.log(`Error calling GitHub API "${url}": ${e}`);
                         return {
                             statusCode: e.response?.status || 500,
                             body: "Error issuing GitHub API request",
@@ -66,7 +71,13 @@ const issueTrackerApiGateway = new awsx.apigateway.API(
                 },
             },
         ],
-    });
+    }, {
+    dependsOn: [
+        // We cannot delete the ACM cert until it is no longer used, so
+        // we need to delete the API Gateway first.
+        sslCert,
+    ]
+});
 
 // Split a domain name into its subdomain and parent domain names.
 // e.g. "www.example.com" => "www", "example.com".
@@ -91,15 +102,6 @@ function getDomainAndSubdomain(domain: string): { subdomain: string, parentDomai
 
 const domainParts = getDomainAndSubdomain(domainName);
 const hostedZoneId = aws.route53.getZone({ name: domainParts.parentDomain }).then(zone => zone.zoneId);
-
-// From https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/
-
-// Provision an SSL certificate to enable SSL -- ensuring to do so in us-east-1.
-const awsUsEast1 = new aws.Provider("usEast1", { region: "us-east-1" });
-const sslCert = new aws.acm.Certificate("sslCert", {
-    domainName: domainName,
-    validationMethod: "DNS",
-}, { provider: awsUsEast1 });
 
 // Create the necessary DNS records for ACM to validate ownership, and wait for it.
 const sslCertValidationRecord = new aws.route53.Record("sslCertValidationRecord", {
@@ -138,3 +140,6 @@ const webDnsRecord = new aws.route53.Record("webDnsRecord", {
         zoneId: webDomain.cloudfrontZoneId,
     }],
 }, { dependsOn: sslCertValidationIssued });
+
+export const apiGatewayUrl = issueTrackerApiGateway.url;
+export const hostedDomain = `https://${domainName}/`;

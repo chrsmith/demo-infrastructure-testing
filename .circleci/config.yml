@@ -16,10 +16,9 @@ jobs:
           command: |
             cd ephemeral-env/
             ./pulumi-stack.sh $CIRCLE_BRANCH
-      # - pulumi/update:
-      #     stack: k8s
-      #     working_directory: ${HOME}/project/pulumi/gcp/gke/
-workflows:
+      - pulumi/update:
+          stack: $CIRCLE_BRANCH
+          working_directory: ./
     build_test:
       jobs:
         - ephem_build_test

@@ -20,6 +20,7 @@ jobs:
             pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
             pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.pulumi.com
             pulumi config set aws:region us-east-1
+      - pulumi/update:
           stack: $CIRCLE_BRANCH
           working_directory: ephemeral-env/
 workflows:

@@ -28,7 +28,28 @@ jobs:
       name: node/default
     steps:
       - checkout
+      - node/install-packages:
+          app-dir: ~/project/ephemeral-env
+      - pulumi/login:
+          access-token: ${PULUMI_ACCESS_TOKEN}
+      - run:
+          name: Destroy Pulumi Stack
+          command: |
+            cd ephemeral-env/
+            ./pulumi-stack.sh $CIRCLE_BRANCH
+            pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
+            pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.$DOMAIN_NAME
+            pulumi config set aws:region us-east-1
+      - pulumi/refresh:
+          stack: $CIRCLE_BRANCH
+      - pulumi/destroy:
+          stack: $CIRCLE_BRANCH
+      - pulumi/stack_rm:
+          stack: $CIRCLE_BRANCH
 workflows:
     build_test:
       jobs:
         - ephem_build_test
+        - destroy_infra:
+            requires:
+             - ephem_build_test

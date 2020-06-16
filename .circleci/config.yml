@@ -19,6 +19,7 @@ jobs:
       - pulumi/update:
           stack: $CIRCLE_BRANCH
           working_directory: ./
+workflows:
     build_test:
       jobs:
         - ephem_build_test

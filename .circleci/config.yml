@@ -18,6 +18,7 @@ jobs:
             cd ephemeral-env/
             ./pulumi-stack.sh $CIRCLE_BRANCH
             pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
+            pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.pulumi.com
       - pulumi/update:
           stack: $CIRCLE_BRANCH
           working_directory: ephemeral-env/

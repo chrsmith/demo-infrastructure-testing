@@ -13,7 +13,7 @@ jobs:
       - pulumi/login:
           access-token: ${PULUMI_ACCESS_TOKEN}
       - run:
-          name: Init Pulumo Stack
+          name: Init Pulumi Stack
           command: |
             cd ephemeral-env/
             ./pulumi-stack.sh $CIRCLE_BRANCH
@@ -23,6 +23,11 @@ jobs:
       - pulumi/update:
           stack: $CIRCLE_BRANCH
           working_directory: ephemeral-env/
+  destroy_infra:
+    executor:
+      name: node/default
+    steps:
+      - checkout
 workflows:
     build_test:
       jobs:

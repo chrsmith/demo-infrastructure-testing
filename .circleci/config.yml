@@ -42,10 +42,13 @@ jobs:
             pulumi config set aws:region us-east-1
       - pulumi/refresh:
           stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
       - pulumi/destroy:
           stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
       - pulumi/stack_rm:
           stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
 workflows:
     build_test:
       jobs:

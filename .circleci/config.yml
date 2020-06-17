@@ -56,3 +56,6 @@ workflows:
         - destroy_infra:
             requires:
              - ephem_build_test
+            filters:
+              branches:
+                only: master

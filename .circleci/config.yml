@@ -1,17 +1,61 @@
 version: 2.1
 orbs:
-  node: circleci/node@1.1.6
+  node: circleci/node@2.1.1
+  pulumi: pulumi/pulumi@2.0.0
 jobs:
-  build-and-test:
+  ephem_build_test:
     executor:
       name: node/default
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+      - node/install-packages:
+          app-dir: ~/project/ephemeral-env
+      - pulumi/login:
+          access-token: ${PULUMI_ACCESS_TOKEN}
+      - run:
+          name: Init Pulumi Stacks
+          command: |
+            cd ephemeral-env/
+            ./pulumi-stack.sh $CIRCLE_BRANCH
+            pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
+            pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.$DOMAIN_NAME
+            pulumi config set aws:region us-east-1
+      - pulumi/update:
+          stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
+  destroy_infra:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          app-dir: ~/project/ephemeral-env
+      - pulumi/login:
+          access-token: ${PULUMI_ACCESS_TOKEN}
+      - run:
+          name: Destroy Pulumi Stacks
+          command: |
+            cd ephemeral-env/
+            ./pulumi-stack.sh $CIRCLE_BRANCH
+            pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
+            pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.$DOMAIN_NAME
+            pulumi config set aws:region us-east-1
+      - pulumi/refresh:
+          stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
+      - pulumi/destroy:
+          stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
+      - pulumi/stack_rm:
+          stack: $CIRCLE_BRANCH
+          working_directory: ephemeral-env/
 workflows:
-    build-and-test:
+    build_test:
       jobs:
-        - build-and-test
+        - ephem_build_test
+        - destroy_infra:
+            requires:
+             - ephem_build_test
+            filters:
+              branches:
+                only: master

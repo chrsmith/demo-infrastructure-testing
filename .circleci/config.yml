@@ -53,6 +53,9 @@ workflows:
     build_test:
       jobs:
         - ephem_build_test
+            filters:
+              branches:
+                ignore: master
         - destroy_infra:
             requires:
              - ephem_build_test

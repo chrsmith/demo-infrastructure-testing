@@ -35,8 +35,8 @@ jobs:
       - run:
           name: Set Merged Branch Name
           command: |
-            MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
-            IFS="/" read void_msg BRANCH_NAME <<< "$MSG"
+            export MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
+            IFS="/" read void_msg BRANCH_NAME \<<< "$MSG"
             export PREVIOUS_BRANCH_NAME=$BRANCH_NAME >> $BASH_ENV
       - run:
           name: Destroy Pulumi Stacks

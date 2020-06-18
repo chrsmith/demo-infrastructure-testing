@@ -38,23 +38,29 @@ jobs:
             export MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
             IFS="/" read void_msg BRANCH_NAME \<<< "$MSG"
             export PREVIOUS_BRANCH_NAME=$BRANCH_NAME >> $BASH_ENV
+            source $BASH_ENV
       - run:
           name: Destroy Pulumi Stacks
           command: |
+            source $BASH_ENV
+            echo "PREV-Branch Var: ${PREVIOUS_BRANCH_NAME}"
             cd ephemeral-env/
             ./pulumi-stack.sh $PREVIOUS_BRANCH_NAME
             pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
             pulumi config set github-issue-tracker:domainName $PREVIOUS_BRANCH_NAME.$DOMAIN_NAME
             pulumi config set aws:region us-east-1
-      - pulumi/refresh:
-          stack: $PREVIOUS_BRANCH_NAME
-          working_directory: ephemeral-env/
-      - pulumi/destroy:
-          stack: $PREVIOUS_BRANCH_NAME
-          working_directory: ephemeral-env/
-      - pulumi/stack_rm:
-          stack: $PREVIOUS_BRANCH_NAME
-          working_directory: ephemeral-env/
+            pulumi refresh --yes --stack $PREVIOUS_BRANCH_NAME
+            pulumi destroy --yes --stack $PREVIOUS_BRANCH_NAME
+            pulumi stack rm $PREVIOUS_BRANCH_NAME --yes
+      # - pulumi/refresh:
+      #     stack: $PREVIOUS_BRANCH_NAME
+      #     working_directory: ephemeral-env/
+      # - pulumi/destroy:
+      #     stack: $PREVIOUS_BRANCH_NAME
+      #     working_directory: ephemeral-env/
+      # - pulumi/stack_rm:
+      #     stack: $PREVIOUS_BRANCH_NAME
+      #     working_directory: ephemeral-env/
 workflows:
     build_test:
       jobs:

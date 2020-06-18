@@ -35,13 +35,14 @@ jobs:
       - run:
           name: Set Merged Branch Name
           command: |
-            export MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
-            IFS="/" read void_msg BRANCH_NAME \<<< "$MSG"
-            export PREVIOUS_BRANCH_NAME=$BRANCH_NAME >> $BASH_ENV
-            source $BASH_ENV
+            
       - run:
           name: Destroy Pulumi Stacks
           command: |
+            # Set the Previous Branch Name for pulumi stack
+            export MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
+            IFS="/" read void_msg BRANCH_NAME \<<< "$MSG"
+            export PREVIOUS_BRANCH_NAME=$BRANCH_NAME >> $BASH_ENV
             source $BASH_ENV
             echo "PREV-Branch Var: ${PREVIOUS_BRANCH_NAME}"
             cd ephemeral-env/

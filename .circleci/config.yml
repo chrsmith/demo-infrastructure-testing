@@ -63,7 +63,6 @@ workflows:
               branches:
                 ignore: master
         - destroy_infra:
-            requires:
              - ephem_build_test
             filters:
               branches:

@@ -33,21 +33,27 @@ jobs:
       - pulumi/login:
           access-token: ${PULUMI_ACCESS_TOKEN}
       - run:
+          name: Set Merged Branch Name
+          command: |
+            MSG="$(git log --first-parent --merges -1 --oneline 2>&1)"
+            IFS="/" read void_msg BRANCH_NAME <<< "$MSG"
+            export PREVIOUS_BRANCH_NAME=$BRANCH_NAME >> $BASH_ENV
+      - run:
           name: Destroy Pulumi Stacks
           command: |
             cd ephemeral-env/
-            ./pulumi-stack.sh $CIRCLE_BRANCH
+            ./pulumi-stack.sh $PREVIOUS_BRANCH_NAME
             pulumi config set github-issue-tracker:githubToken $GITHUB_ACCESS_TOKEN --secret
-            pulumi config set github-issue-tracker:domainName $CIRCLE_BRANCH.$DOMAIN_NAME
+            pulumi config set github-issue-tracker:domainName $PREVIOUS_BRANCH_NAME.$DOMAIN_NAME
             pulumi config set aws:region us-east-1
       - pulumi/refresh:
-          stack: $CIRCLE_BRANCH
+          stack: $PREVIOUS_BRANCH_NAME
           working_directory: ephemeral-env/
       - pulumi/destroy:
-          stack: $CIRCLE_BRANCH
+          stack: $PREVIOUS_BRANCH_NAME
           working_directory: ephemeral-env/
       - pulumi/stack_rm:
-          stack: $CIRCLE_BRANCH
+          stack: $PREVIOUS_BRANCH_NAME
           working_directory: ephemeral-env/
 workflows:
     build_test:

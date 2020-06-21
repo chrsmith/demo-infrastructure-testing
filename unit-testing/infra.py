@@ -1,5 +1,5 @@
-"""Simple Pulumi program standing up an
-EC2 VM serving a static file.
+"""Pulumi program for standing up a simple EC2 VM and serving
+a static webpage from it.
 """
 
 import pulumi
@@ -8,7 +8,7 @@ from pulumi_aws import ec2
 # Writes an index.html file, then runs the built-in Python
 # webserver module on port 80.
 user_data = """#!/bin/bash
-echo "Hello, World! From a Pulumi-managed EC2 server." > index.html
+echo "<h1>Hello, World!</h1><p>From a Pulumi-managed EC2 server.</p>" > index.html
 nohup python -m SimpleHTTPServer 80 &
 """
 

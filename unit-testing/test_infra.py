@@ -1,12 +1,13 @@
-"""Unit tests for the infra
+"""Unit tests for the infra package.
 """
-
 
 import unittest
 import pulumi
 
 # Mock out the Pulumi runtime engine, so that rather than creating or updating
 # cloud resources, we will instead make resources available for testing.
+#
+# NOTE: This must happen _before_ the infra package is imported.
 class MyMocks(pulumi.runtime.Mocks):
     def new_resource(self, type_, name, inputs, provider, id_):
         return [name + '_id', inputs]
@@ -15,7 +16,9 @@ class MyMocks(pulumi.runtime.Mocks):
 
 pulumi.runtime.set_mocks(MyMocks())
 
-# Import the module to test.
+# Import the module to test. Since we mocked out the Pulumi engine's runtime,
+# the "resource graph" will be available for us to inexpect as part of our
+# unit tests.
 import infra
 
 class InfrastructureTests(unittest.TestCase):

@@ -48,15 +48,6 @@ jobs:
             pulumi refresh --yes --stack $PREVIOUS_BRANCH_NAME
             pulumi destroy --yes --stack $PREVIOUS_BRANCH_NAME
             pulumi stack rm $PREVIOUS_BRANCH_NAME --yes
-      # - pulumi/refresh:
-      #     stack: $PREVIOUS_BRANCH_NAME
-      #     working_directory: ephemeral-env/
-      # - pulumi/destroy:
-      #     stack: $PREVIOUS_BRANCH_NAME
-      #     working_directory: ephemeral-env/
-      # - pulumi/stack_rm:
-      #     stack: $PREVIOUS_BRANCH_NAME
-      #     working_directory: ephemeral-env/
 workflows:
     build_test:
       jobs:

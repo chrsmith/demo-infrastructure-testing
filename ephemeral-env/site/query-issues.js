@@ -475,6 +475,6 @@ $(document).on("change", "#milestone", function (e) {
 initSelectOptions(
     $("#org"),
     "Select an org",
-    ["golang", "angular", "circleci", "pulumi"],
+    ["golang", "angular", "circleci"],
     "golang",
 );

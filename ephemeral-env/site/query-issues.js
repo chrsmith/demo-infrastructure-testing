@@ -2,9 +2,10 @@
 var originalGithubBaseURL = "https://api.github.com";
 var githubBaseURL = "github";
 var githubHeaders = {}
+
 // To access the API directly (e.g. running on localhost), uncomment below:
 // const githubBaseURL = "https://api.github.com";
-// const githubAccessToken = "xxxxxxxxxxxxxxxxxxxxx";
+// const githubAccessToken = "";
 // var githubHeaders = { "Authorization": `token ${githubAccessToken}` };
 
 function escapeHtmlChars(s) {
@@ -40,25 +41,6 @@ function parseLinkHeader(header) {
 }
 
 const priorityPrefix = "priority/";
-
-function getIssuePriority(issue) {
-    for (const label of issue.labels) {
-        if (label.name.indexOf(priorityPrefix) === 0) {
-            return parseInt(label.name.substring(priorityPrefix.length + 1));
-        }
-    }
-    return undefined;
-}
-
-function getIssuePriorityRow(issue) {
-    for (const label of issue.labels) {
-        if (label.name.indexOf(priorityPrefix) === 0) {
-            return "<td style='background: #" + label.color + "; color: #fff; font-weight: bold'>P" +
-                label.name.substring(priorityPrefix.length + 1) + "</td>";
-        }
-    }
-    return "<td></td>";
-}
 
 function initSelectOptions(box, def, opts, selected) {
     console.log("initSelectOptions", box, def, opts, selected);
@@ -353,18 +335,6 @@ $(document).on("change", "#milestone", function (e) {
 
                     // Sort things; first by priority -- P0, P1, untagged, P2, and then by update date.
                     const priUpdateDateComparator = (a, b) => {
-                        // First, detect the priority; 0 < 1 < ... < 2
-                        let pa = getIssuePriority(a);
-                        let pb = getIssuePriority(b);
-                        if (pa === 2) pa++;
-                        if (pb === 2) pb++;
-                        if (pa === undefined) pa = 2;
-                        if (pb === undefined) pb = 2;
-                        const pdiff = pa - pb;
-                        if (pdiff !== 0) {
-                            return pdiff;
-                        }
-
                         // For matching priorities, sort so that most recently updated is at top.
                         const au = moment(a.updated_at);
                         const bu = moment(b.updated_at);
@@ -408,20 +378,18 @@ $(document).on("change", "#milestone", function (e) {
                             const sinceCreated = now - moment(issue.created_at);
                             const sinceUpdated = now - moment(issue.updated_at);
                             $("#people_issues tbody").append(
-                                "<tr style='background: " + userRowColor + "'>" +
+                                "<tr>" +
                                 "<td><b>" + userName + "</b></td>" +
                                 "<td><a href='" + issue.html_url + "' target=_blank>" +
                                 issue.repo + "#" + issue.number + "</a></td>" +
-                                getIssuePriorityRow(issue) +
                                 "<td>" + escapeHtmlChars(issue.title) + "</td>" +
-                                "<td></td>" +
                                 "<td><p title='" + issue.created_at + "'>" +
                                 moment.duration(sinceCreated).humanize() + "</p></td>" +
                                 "<td><p title='" + issue.updated_at + "'>" +
                                 moment.duration(sinceUpdated).humanize() + "</p></td>" +
                                 "</tr>"
                             );
-                            days++; // count each bug as 1d; TODO: better.
+                            days++;
                             first = false;
                             openCount++;
                         }
@@ -437,13 +405,10 @@ $(document).on("change", "#milestone", function (e) {
                             }
 
                             $("#people_issues tbody").append(
-                                "<tr style='background: " + userRowColor + "'>" +
+                                "<tr>" +
                                 "<td></td>" +
                                 "<td></td>" +
                                 "<td></td>" +
-                                "<td></td>" +
-                                "<td style='background: " +
-                                dayRowColor + "'><b>" + dayLabel + "</b></td>" +
                                 "<td></td>" +
                                 "<td></td>" +
                                 "</tr>"
@@ -458,17 +423,10 @@ $(document).on("change", "#milestone", function (e) {
                     let closedCount = 0;
                     for (const user of Object.keys(userClosedIssues).sort()) {
                         let userRowColor;
-                        if (!user) {
-                            // Untriaged, so orange.
-                            userRowColor = "#fa3";
-                        } else {
-                            if (odd) {
-                                userRowColor = "#fff";
-                            } else {
-                                userRowColor = "#eff";
-                            }
-                            odd = !odd;
-                        }
+                        // if (!user) {
+                        //     // Untriaged, so orange.
+                        //     unassigned = "#fa3";
+                        // }
 
                         let days = 0;
                         let first = true;
@@ -477,13 +435,11 @@ $(document).on("change", "#milestone", function (e) {
                             const sinceCreated = now - moment(issue.created_at);
                             const sinceUpdated = now - moment(issue.updated_at);
                             $("#people_issues_closed tbody").append(
-                                "<tr style='background: " + userRowColor + "'>" +
+                                "<tr>" +  // TODO: Mark unassigned as "warn".
                                 "<td><b>" + userName + "</b></td>" +
                                 "<td><a href='" + issue.html_url + "' target=_blank>" +
                                 issue.repo + "#" + issue.number + "</a></td>" +
-                                getIssuePriorityRow(issue) +
                                 "<td>" + escapeHtmlChars(issue.title) + "</td>" +
-                                "<td></td>" +
                                 "<td><p title='" + issue.created_at + "'>" +
                                 moment.duration(sinceCreated).humanize() + "</p></td>" +
                                 "<td><p title='" + issue.updated_at + "'>" +
@@ -497,12 +453,10 @@ $(document).on("change", "#milestone", function (e) {
 
                         if (user) {
                             $("#people_issues_closed tbody").append(
-                                "<tr style='background: " + userRowColor + "'>" +
+                                "<tr>" +
                                 "<td></td>" +
                                 "<td></td>" +
                                 "<td></td>" +
-                                "<td></td>" +
-                                "<td style='background: #ccc'><b>" + days + "</b></td>" +
                                 "<td></td>" +
                                 "<td></td>" +
                                 "</tr>"
@@ -521,6 +475,6 @@ $(document).on("change", "#milestone", function (e) {
 initSelectOptions(
     $("#org"),
     "Select an org",
-    ["golang"],
+    ["golang", "angular", "circleci", "pulumi"],
     "golang",
 );
